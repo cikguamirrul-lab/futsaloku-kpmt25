@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="ms" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jadual Perlawanan Futsal</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full overflow-auto" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+   <div class="max-w-7xl mx-auto px-4 py-8">
+    <header class="text-center mb-8">
+     <h1 id="tournament-title" class="text-4xl font-bold text-white mb-2">Kejohanan Futsal 12TKB Sukan OKU Karnival Parlimen Masjid Tanah 2025</h1>
+     <p class="text-white text-opacity-90">Sistem Round Robin - 3 Kumpulan</p><!-- Category Selection -->
+     <div class="mt-6 flex justify-center gap-3"><button onclick="switchCategory('rendah')" id="btn-category-rendah" class="px-8 py-3 bg-white text-purple-700 font-bold rounded-lg shadow-lg hover:bg-gray-100 transition-colors text-lg"> 🎯 Kategori Rendah </button> <button onclick="switchCategory('menengah')" id="btn-category-menengah" class="px-8 py-3 bg-purple-200 text-purple-700 font-bold rounded-lg shadow-lg hover:bg-purple-300 transition-colors text-lg"> 🎯 Kategori Menengah </button>
+     </div><!-- Navigation Buttons -->
+     <div class="mt-6 flex justify-center gap-3 flex-wrap"><button onclick="showPage('standings')" id="btn-standings" class="px-6 py-3 bg-white text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-gray-100 transition-colors"> 📊 Kedudukan Mata </button> <button onclick="showPage('h2h')" id="btn-h2h" class="px-6 py-3 bg-purple-200 text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-purple-300 transition-colors"> 🤝 Head-to-Head </button> <button onclick="showPage('schedule')" id="btn-schedule" class="px-6 py-3 bg-purple-200 text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-purple-300 transition-colors"> ⏰ Jadual Masa </button> <button onclick="showPage('knockout')" id="btn-knockout" class="px-6 py-3 bg-purple-200 text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-purple-300 transition-colors"> 🏆 Peringkat Kalah Mati </button>
+     </div>
+     <div class="mt-4 flex justify-center gap-2"><button id="mode-toggle" onclick="toggleMode()" class="px-6 py-2 bg-white text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-gray-100 transition-colors"> ���� Mod Admin </button>
+      <div id="mode-indicator" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-lg">
+       🔒 Mod Paparan
+      </div>
+     </div><!-- Modal Password -->
+     <div id="password-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="margin: 0;">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+       <h2 class="text-2xl font-bold mb-4 text-purple-700">🔐 Login Admin</h2>
+       <p class="text-gray-600 mb-4">Masukkan password untuk akses mod admin:</p><input type="password" id="password-input" placeholder="Password" class="w-full border-2 border-gray-300 rounded px-4 py-2 mb-4 focus:border-purple-500 focus:outline-none" onkeypress="if(event.key==='Enter') checkPassword()">
+       <div id="error-message" class="text-red-500 text-sm mb-4 hidden">
+        ❌ Password salah! Cuba lagi.
+       </div>
+       <div class="flex gap-2"><button onclick="checkPassword()" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 font-semibold"> Login </button> <button onclick="closePasswordModal()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 font-semibold"> Batal </button>
+       </div>
+       <p class="text-xs text-gray-500 mt-4">💡 Hint: karnival masjid tanah</p>
+      </div>
+     </div>
+    </header><!-- Page 1: Kedudukan Mata -->
+    <div id="page-standings" class="space-y-6 mb-8"><!-- Kumpulan A -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 id="group-a-title" class="text-2xl font-bold mb-4 text-purple-700">Kumpulan A</h2>
+      <div id="standings-a" class="mb-6"></div>
+      <h3 class="text-lg font-semibold mb-3 text-gray-700">Perlawanan</h3>
+      <div id="matches-a" class="space-y-2"></div>
+     </div><!-- Kumpulan B -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 id="group-b-title" class="text-2xl font-bold mb-4 text-purple-700">Kumpulan B</h2>
+      <div id="standings-b" class="mb-6"></div>
+      <h3 class="text-lg font-semibold mb-3 text-gray-700">Perlawanan</h3>
+      <div id="matches-b" class="space-y-2"></div>
+     </div><!-- Kumpulan C -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 id="group-c-title" class="text-2xl font-bold mb-4 text-purple-700">Kumpulan C</h2>
+      <div id="standings-c" class="mb-6"></div>
+      <h3 class="text-lg font-semibold mb-3 text-gray-700">Perlawanan</h3>
+      <div id="matches-c" class="space-y-2"></div>
+     </div>
+    </div><!-- Page 2: Head-to-Head -->
+    <div id="page-h2h" class="space-y-6 mb-8 hidden"><!-- Kumpulan A H2H -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-purple-700">Head-to-Head - Kumpulan A</h2>
+      <div id="h2h-a"></div>
+     </div><!-- Kumpulan B H2H -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-purple-700">Head-to-Head - Kumpulan B</h2>
+      <div id="h2h-b"></div>
+     </div><!-- Kumpulan C H2H -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-purple-700">Head-to-Head - Kumpulan C</h2>
+      <div id="h2h-c"></div>
+     </div>
+    </div><!-- Page 3: Jadual Masa -->
+    <div id="page-schedule" class="space-y-6 mb-8 hidden"><!-- Kumpulan A Schedule -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-purple-700">Jadual Masa - Kumpulan A</h2>
+      <div id="schedule-a" class="space-y-2"></div>
+     </div><!-- Kumpulan B Schedule -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-purple-700">Jadual Masa - Kumpulan B</h2>
+      <div id="schedule-b" class="space-y-2"></div>
+     </div><!-- Kumpulan C Schedule -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-purple-700">Jadual Masa - Kumpulan C</h2>
+      <div id="schedule-c" class="space-y-2"></div>
+     </div><!-- Knockout Stage Schedule -->
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-4 text-purple-700">🏆 Jadual Masa - Peringkat Kalah Mati</h2><!-- Suku Akhir -->
+      <h3 class="text-lg font-semibold mb-3 text-gray-700 mt-4">Suku Akhir</h3>
+      <div id="schedule-knockout-quarter" class="space-y-2 mb-6"></div><!-- Separuh Akhir -->
+      <h3 class="text-lg font-semibold mb-3 text-gray-700 mt-4">Separuh Akhir</h3>
+      <div id="schedule-knockout-semi" class="space-y-2 mb-6"></div><!-- Akhir -->
+      <h3 class="text-lg font-semibold mb-3 text-gray-700 mt-4">Akhir</h3>
+      <div id="schedule-knockout-final" class="space-y-2"></div>
+     </div>
+    </div><!-- Page 4: Peringkat Kalah Mati -->
+    <div id="page-knockout" class="space-y-6 mb-8 hidden">
+     <div class="bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-6 text-center text-purple-700">🏆 Peringkat Kalah Mati</h2><!-- Quarter Final -->
+      <div id="quarter-finals-section" class="mb-8">
+       <h3 class="text-xl font-semibold mb-4 text-gray-700 text-center">Suku Akhir</h3>
+       <div class="grid md:grid-cols-2 gap-4"><!-- Quarter Final 1 -->
+        <div id="quarter1-container" class="border-2 border-blue-300 rounded-lg p-4 bg-blue-50">
+         <div class="flex justify-between items-center mb-3">
+          <div class="text-sm font-semibold text-blue-700">
+           Suku Akhir 1
+          </div>
+          <div id="quarter1-time" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">
+           ⏰ 11:16-11:23
+          </div>
+         </div>
+         <div id="quarter1-info" class="text-xs text-center text-gray-600 mb-3">
+          Johan A vs Tempat 3 Terbaik #2
+         </div>
+         <div id="quarter1-match"></div>
+        </div><!-- Quarter Final 2 -->
+        <div id="quarter2-container" class="border-2 border-blue-300 rounded-lg p-4 bg-blue-50">
+         <div class="flex justify-between items-center mb-3">
+          <div class="text-sm font-semibold text-blue-700">
+           Suku Akhir 2
+          </div>
+          <div id="quarter2-time" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">
+           ⏰ 11:23-11:30
+          </div>
+         </div>
+         <div id="quarter2-info" class="text-xs text-center text-gray-600 mb-3">
+          Johan B vs Tempat 3 Terbaik #1
+         </div>
+         <div id="quarter2-match"></div>
+        </div><!-- Quarter Final 3 -->
+        <div id="quarter3-container" class="border-2 border-blue-300 rounded-lg p-4 bg-blue-50">
+         <div class="flex justify-between items-center mb-3">
+          <div class="text-sm font-semibold text-blue-700">
+           Suku Akhir 3
+          </div>
+          <div id="quarter3-time" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">
+           ⏰ 11:30-11:37
+          </div>
+         </div>
+         <div id="quarter3-info" class="text-xs text-center text-gray-600 mb-3">
+          Johan C vs Naib Johan B
+         </div>
+         <div id="quarter3-match"></div>
+        </div><!-- Quarter Final 4 -->
+        <div id="quarter4-container" class="border-2 border-blue-300 rounded-lg p-4 bg-blue-50">
+         <div class="flex justify-between items-center mb-3">
+          <div class="text-sm font-semibold text-blue-700">
+           Suku Akhir 4
+          </div>
+          <div id="quarter4-time" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">
+           ⏰ 11:37-11:44
+          </div>
+         </div>
+         <div id="quarter4-info" class="text-xs text-center text-gray-600 mb-3">
+          Naib Johan A vs Naib Johan C
+         </div>
+         <div id="quarter4-match"></div>
+        </div>
+       </div>
+      </div><!-- Semi Final -->
+      <div class="mb-8">
+       <h3 class="text-xl font-semibold mb-4 text-gray-700 text-center">Separuh Akhir</h3>
+       <div class="grid md:grid-cols-2 gap-4"><!-- Semi Final 1 -->
+        <div id="semi1-container" class="border-2 border-purple-300 rounded-lg p-4 bg-purple-50">
+         <div class="flex justify-between items-center mb-3">
+          <div class="text-sm font-semibold text-purple-700">
+           Separuh Akhir 1
+          </div>
+          <div id="semi1-time" class="bg-purple-600 text-white px-3 py-1 rounded text-xs font-bold">
+           ⏰ 11:44-11:51
+          </div>
+         </div>
+         <div id="semi1-info" class="text-xs text-center text-gray-600 mb-3">
+          Menang Suku Akhir 1 vs Menang Suku Akhir 2
+         </div>
+         <div id="semi1-match"></div>
+        </div><!-- Semi Final 2 -->
+        <div id="semi2-container" class="border-2 border-purple-300 rounded-lg p-4 bg-purple-50">
+         <div class="flex justify-between items-center mb-3">
+          <div class="text-sm font-semibold text-purple-700">
+           Separuh Akhir 2
+          </div>
+          <div id="semi2-time" class="bg-purple-600 text-white px-3 py-1 rounded text-xs font-bold">
+           ⏰ 11:51-11:58
+          </div>
+         </div>
+         <div id="semi2-info" class="text-xs text-center text-gray-600 mb-3">
+          Menang Suku Akhir 3 vs Menang Suku Akhir 4
+         </div>
+         <div id="semi2-match"></div>
+        </div>
+       </div>
+      </div><!-- Final -->
+      <div class="mb-4">
+       <h3 class="text-xl font-semibold mb-4 text-gray-700 text-center">🏆 Akhir</h3>
+       <div class="max-w-2xl mx-auto">
+        <div class="border-4 border-yellow-400 rounded-lg p-6 bg-gradient-to-br from-yellow-50 to-yellow-100">
+         <div class="flex justify-between items-center mb-3">
+          <div class="text-sm font-semibold text-yellow-700">
+           Perlawanan Akhir
+          </div>
+          <div id="final-time" class="bg-yellow-600 text-white px-4 py-1 rounded text-xs font-bold">
+           ⏰ 11:58-12:05
+          </div>
+         </div>
+         <div id="final-info" class="text-xs text-center text-gray-600 mb-4">
+          Pemenang Separuh Akhir 1 vs Pemenang Separuh Akhir 2
+         </div>
+         <div id="final-match"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      tournament_title: "Kejohanan Futsal Sukan OKU Karnival Parlimen Masjid Tanah 2025",
+      group_a_name: "Kumpulan A",
+      group_b_name: "Kumpulan B",
+      group_c_name: "Kumpulan C",
+      team_1: "SUPERKIDS FC",
+      team_2: "BILIMBIANZ FC",
+      team_3: "BIDARIANS",
+      team_4: "ELITE BROTHERS",
+      team_5: "SK LESONG BATU",
+      team_6: "YOUNG TIGERS",
+      team_7: "SKDT PANTHERS",
+      team_8: "TKRIMS",
+      team_9: "PPDK SERI PENGASIH",
+      team_10: "PERTIWI FC",
+      team_11: "D'NANING STRIKERS",
+      team_12: "DEMANG TAHA FC",
+      team_5_a: "A5",
+      team_5_b: "B5",
+      primary_color: "#667eea",
+      secondary_color: "#764ba2",
+      surface_color: "#ffffff",
+      text_color: "#374151",
+      button_color: "#8b5cf6",
+      font_family: "system-ui",
+      font_size: 16
+    };
+
+    let currentPage = 'standings';
+    let currentCategory = 'rendah'; // rendah or menengah
+
+    function switchCategory(category) {
+      currentCategory = category;
+      
+      // Update button styles
+      document.getElementById('btn-category-rendah').className = category === 'rendah'
+        ? 'px-8 py-3 bg-white text-purple-700 font-bold rounded-lg shadow-lg hover:bg-gray-100 transition-colors text-lg'
+        : 'px-8 py-3 bg-purple-200 text-purple-700 font-bold rounded-lg shadow-lg hover:bg-purple-300 transition-colors text-lg';
+      
+      document.getElementById('btn-category-menengah').className = category === 'menengah'
+        ? 'px-8 py-3 bg-white text-purple-700 font-bold rounded-lg shadow-lg hover:bg-gray-100 transition-colors text-lg'
+        : 'px-8 py-3 bg-purple-200 text-purple-700 font-bold rounded-lg shadow-lg hover:bg-purple-300 transition-colors text-lg';
+      
+      // Re-render all data for the new category
+      renderAll();
+    }
+
+    function showPage(pageName) {
+      document.getElementById('page-standings').classList.add('hidden');
+      document.getElementById('page-h2h').classList.add('hidden');
+      document.getElementById('page-schedule').classList.add('hidden');
+      document.getElementById('page-knockout').classList.add('hidden');
+
+      document.getElementById(`page-${pageName}`).classList.remove('hidden');
+
+      document.getElementById('btn-standings').className = pageName === 'standings' 
+        ? 'px-6 py-3 bg-white text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-gray-100 transition-colors'
+        : 'px-6 py-3 bg-purple-200 text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-purple-300 transition-colors';
+      
+      document.getElementById('btn-h2h').className = pageName === 'h2h' 
+        ? 'px-6 py-3 bg-white text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-gray-100 transition-colors'
+        : 'px-6 py-3 bg-purple-200 text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-purple-300 transition-colors';
+      
+      document.getElementById('btn-schedule').className = pageName === 'schedule' 
+        ? 'px-6 py-3 bg-white text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-gray-100 transition-colors'
+        : 'px-6 py-3 bg-purple-200 text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-purple-300 transition-colors';
+      
+      document.getElementById('btn-knockout').className = pageName === 'knockout' 
+        ? 'px-6 py-3 bg-white text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-gray-100 transition-colors'
+        : 'px-6 py-3 bg-purple-200 text-purple-700 font-semibold rounded-lg shadow-lg hover:bg-purple-300 transition-colors';
+
+      currentPage = pageName;
+    }
+
+    function getTeamName(idx, config) {
+      // For Menengah category Kumpulan A - use specific team names
+      if (currentCategory === 'menengah') {
+        const menengahTeamsA = [
+          'SMK SUNGAI UDANG',
+          'MALINDO TEAM',
+          'KASTURI A',
+          'KASTURI C',
+          'SMKKT'
+        ];
+        
+        const menengahTeamsB = [
+          'KASTURI B',
+          "D'NAISS",
+          'SERI SOCCER',
+          'SEMERAH',
+          'LUNASS FC'
+        ];
+        
+        if (idx <= 4) return menengahTeamsA[idx];
+        if (idx >= 5 && idx <= 9) return menengahTeamsB[idx - 5];
+      }
+      // For Rendah category, use configured team names
+      return config[`team_${idx + 1}`] || defaultConfig[`team_${idx + 1}`];
+    }
+
+    function generateMatches(group, startIdx, teamCount) {
+      const matches = [];
+      for (let i = 0; i < teamCount; i++) {
+        for (let j = i + 1; j < teamCount; j++) {
+          matches.push({
+            id: `${group}-${i}-${j}`,
+            team1Idx: startIdx + i,
+            team2Idx: startIdx + j
+          });
+        }
+      }
+      
+      const scheduled = [];
+      const matchesCopy = [...matches];
+      const teamLastMatch = new Map();
+      
+      for (let i = 0; i < teamCount; i++) {
+        teamLastMatch.set(startIdx + i, -10);
+      }
+      
+      while (matchesCopy.length > 0) {
+        let bestMatch = null;
+        let bestIndex = -1;
+        let bestMinGap = -1;
+        
+        for (let i = 0; i < matchesCopy.length; i++) {
+          const match = matchesCopy[i];
+          const team1Gap = scheduled.length - teamLastMatch.get(match.team1Idx);
+          const team2Gap = scheduled.length - teamLastMatch.get(match.team2Idx);
+          const minGap = Math.min(team1Gap, team2Gap);
+          
+          if (minGap > bestMinGap) {
+            bestMinGap = minGap;
+            bestMatch = match;
+            bestIndex = i;
+          }
+        }
+        
+        if (bestMatch) {
+          scheduled.push(bestMatch);
+          teamLastMatch.set(bestMatch.team1Idx, scheduled.length - 1);
+          teamLastMatch.set(bestMatch.team2Idx, scheduled.length - 1);
+          matchesCopy.splice(bestIndex, 1);
+        }
+      }
+      
+      return scheduled;
+    }
+
+    // Match data for KATEGORI RENDAH (3 groups)
+    // Format: 3 kumpulan x 4 pasukan = 12 pasukan
+    // Top 8 layak: 3 Johan + 3 Naib Johan + 2 Tempat 3 Terbaik
+    const matchesRendahA = [
+      { id: 'A-0-3', team1Idx: 0, team2Idx: 3, time: '9:00' },
+      { id: 'A-1-2', team1Idx: 1, team2Idx: 2, time: '9:21' },
+      { id: 'A-2-3', team1Idx: 2, team2Idx: 3, time: '9:42' },
+      { id: 'A-0-1', team1Idx: 0, team2Idx: 1, time: '9:56' },
+      { id: 'A-0-2', team1Idx: 0, team2Idx: 2, time: '10:27' },
+      { id: 'A-1-3', team1Idx: 1, team2Idx: 3, time: '10:41' }
+    ];
+    
+    const matchesRendahB = [
+      { id: 'B-0-3', team1Idx: 4, team2Idx: 7, time: '9:07' },
+      { id: 'B-1-2', team1Idx: 5, team2Idx: 6, time: '9:28' },
+      { id: 'B-2-3', team1Idx: 6, team2Idx: 7, time: '9:49' },
+      { id: 'B-0-1', team1Idx: 4, team2Idx: 5, time: '10:13' },
+      { id: 'B-0-2', team1Idx: 4, team2Idx: 6, time: '10:34' },
+      { id: 'B-1-3', team1Idx: 5, team2Idx: 7, time: '10:48' }
+    ];
+    
+    const matchesRendahC = [
+      { id: 'C-0-3', team1Idx: 8, team2Idx: 11, time: '9:14' },
+      { id: 'C-1-2', team1Idx: 9, team2Idx: 10, time: '9:35' },
+      { id: 'C-2-3', team1Idx: 10, team2Idx: 11, time: '10:03' },
+      { id: 'C-0-1', team1Idx: 8, team2Idx: 9, time: '10:20' },
+      { id: 'C-0-2', team1Idx: 8, team2Idx: 10, time: '10:55' },
+      { id: 'C-1-3', team1Idx: 9, team2Idx: 11, time: '11:09' }
+    ];
+
+    // Match data for KATEGORI MENENGAH (2 groups only - A & B, 5 teams each)
+    // Jadual berselang-seli antara Kumpulan A dan B, setiap pasukan ada rehat minimum 14 minit
+    const matchesMenengahA = [
+      { id: 'A-0-1', team1Idx: 0, team2Idx: 1, time: '13:00' },
+      { id: 'A-2-3', team1Idx: 2, team2Idx: 3, time: '13:14' },
+      { id: 'A-0-4', team1Idx: 0, team2Idx: 4, time: '13:28' },
+      { id: 'A-1-2', team1Idx: 1, team2Idx: 2, time: '13:42' },
+      { id: 'A-3-4', team1Idx: 3, team2Idx: 4, time: '13:56' },
+      { id: 'A-0-2', team1Idx: 0, team2Idx: 2, time: '14:10' },
+      { id: 'A-1-3', team1Idx: 1, team2Idx: 3, time: '14:24' },
+      { id: 'A-2-4', team1Idx: 2, team2Idx: 4, time: '14:38' },
+      { id: 'A-0-3', team1Idx: 0, team2Idx: 3, time: '14:52' },
+      { id: 'A-1-4', team1Idx: 1, team2Idx: 4, time: '15:06' }
+    ];
+    
+    // Kumpulan B: 5 pasukan (5-9) = 10 perlawanan berselang-seli dengan Kumpulan A
+    const matchesMenengahB = [
+      { id: 'B-0-1', team1Idx: 5, team2Idx: 6, time: '13:07' },
+      { id: 'B-2-3', team1Idx: 7, team2Idx: 8, time: '13:21' },
+      { id: 'B-0-4', team1Idx: 5, team2Idx: 9, time: '13:35' },
+      { id: 'B-1-2', team1Idx: 6, team2Idx: 7, time: '13:49' },
+      { id: 'B-3-4', team1Idx: 8, team2Idx: 9, time: '14:03' },
+      { id: 'B-0-2', team1Idx: 5, team2Idx: 7, time: '14:17' },
+      { id: 'B-1-3', team1Idx: 6, team2Idx: 8, time: '14:31' },
+      { id: 'B-2-4', team1Idx: 7, team2Idx: 9, time: '14:45' },
+      { id: 'B-0-3', team1Idx: 5, team2Idx: 8, time: '14:59' },
+      { id: 'B-1-4', team1Idx: 6, team2Idx: 9, time: '15:13' }
+    ];
+
+    let matchScores = new Map();
+    let isAdminMode = false;
+    let isAuthenticated = false;
+    const ADMIN_PASSWORD = "admin123";
+
+    function getMatchId(matchId) {
+      return `${currentCategory}-${matchId}`;
+    }
+
+    function calculateStandings(teamIndices, matches, scoresMap, config) {
+      const standings = teamIndices.map(idx => ({
+        team: getTeamName(idx, config),
+        teamIdx: idx,
+        played: 0,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        gf: 0,
+        ga: 0,
+        gd: 0,
+        points: 0
+      }));
+
+      matches.forEach(match => {
+        const score = scoresMap.get(getMatchId(match.id));
+        if (score && score.team1_score !== null && score.team2_score !== null) {
+          const team1Stats = standings.find(s => s.team === getTeamName(match.team1Idx, config));
+          const team2Stats = standings.find(s => s.team === getTeamName(match.team2Idx, config));
+
+          team1Stats.played++;
+          team2Stats.played++;
+          team1Stats.gf += score.team1_score;
+          team1Stats.ga += score.team2_score;
+          team2Stats.gf += score.team2_score;
+          team2Stats.ga += score.team1_score;
+
+          if (score.team1_score > score.team2_score) {
+            team1Stats.won++;
+            team1Stats.points += 3;
+            team2Stats.lost++;
+          } else if (score.team1_score < score.team2_score) {
+            team2Stats.won++;
+            team2Stats.points += 3;
+            team1Stats.lost++;
+          } else {
+            team1Stats.drawn++;
+            team2Stats.drawn++;
+            team1Stats.points++;
+            team2Stats.points++;
+          }
+
+          team1Stats.gd = team1Stats.gf - team1Stats.ga;
+          team2Stats.gd = team2Stats.gf - team2Stats.ga;
+        }
+      });
+
+      function getHeadToHead(teamIdx1, teamIdx2) {
+        const match = matches.find(m => 
+          (m.team1Idx === teamIdx1 && m.team2Idx === teamIdx2) ||
+          (m.team1Idx === teamIdx2 && m.team2Idx === teamIdx1)
+        );
+        
+        if (!match) return null;
+        
+        const score = scoresMap.get(getMatchId(match.id));
+        if (!score || score.team1_score === null || score.team2_score === null) return null;
+        
+        if (match.team1Idx === teamIdx1) {
+          return {
+            for: score.team1_score,
+            against: score.team2_score
+          };
+        } else {
+          return {
+            for: score.team2_score,
+            against: score.team1_score
+          };
+        }
+      }
+
+      standings.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.gd !== a.gd) return b.gd - a.gd;
+        if (b.gf !== a.gf) return b.gf - a.gf;
+        
+        const h2h = getHeadToHead(a.teamIdx, b.teamIdx);
+        if (h2h) {
+          if (h2h.for > h2h.against) return -1;
+          if (h2h.for < h2h.against) return 1;
+        }
+        
+        return 0;
+      });
+
+      return standings;
+    }
+
+    function renderStandings(containerId, teamIndices, matches) {
+      const container = document.getElementById(containerId);
+      const config = window.elementSdk?.config || defaultConfig;
+      const standings = calculateStandings(teamIndices, matches, matchScores, config);
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const textColor = config.text_color || defaultConfig.text_color;
+      
+      container.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b-2" style="color: ${textColor}; font-size: ${baseSize * 0.85}px;">
+                <th class="text-left py-2 px-2">#</th>
+                <th class="text-left py-2 px-2">Pasukan</th>
+                <th class="text-center py-2 px-1">P</th>
+                <th class="text-center py-2 px-1">M</th>
+                <th class="text-center py-2 px-1">S</th>
+                <th class="text-center py-2 px-1">K</th>
+                <th class="text-center py-2 px-1">JG</th>
+                <th class="text-center py-2 px-1">BG</th>
+                <th class="text-center py-2 px-1">PG</th>
+                <th class="text-center py-2 px-1 font-bold">Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${standings.map((team, index) => `
+                <tr class="border-b" style="color: ${textColor}; font-size: ${baseSize * 0.9}px;">
+                  <td class="py-2 px-2 font-semibold">${index + 1}</td>
+                  <td class="py-2 px-2">${team.team}</td>
+                  <td class="text-center py-2 px-1">${team.played}</td>
+                  <td class="text-center py-2 px-1">${team.won}</td>
+                  <td class="text-center py-2 px-1">${team.drawn}</td>
+                  <td class="text-center py-2 px-1">${team.lost}</td>
+                  <td class="text-center py-2 px-1">${team.gf}</td>
+                  <td class="text-center py-2 px-1">${team.ga}</td>
+                  <td class="text-center py-2 px-1">${team.gd >= 0 ? '+' : ''}${team.gd}</td>
+                  <td class="text-center py-2 px-1 font-bold">${team.points}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderHeadToHead(containerId, teamIndices, matches) {
+      const container = document.getElementById(containerId);
+      const config = window.elementSdk?.config || defaultConfig;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const textColor = config.text_color || defaultConfig.text_color;
+      
+      const matrix = {};
+      teamIndices.forEach(idx1 => {
+        matrix[idx1] = {};
+        teamIndices.forEach(idx2 => {
+          if (idx1 !== idx2) {
+            matrix[idx1][idx2] = null;
+          }
+        });
+      });
+
+      matches.forEach(match => {
+        const score = matchScores.get(getMatchId(match.id));
+        if (score && score.team1_score !== null && score.team2_score !== null) {
+          matrix[match.team1Idx][match.team2Idx] = {
+            for: score.team1_score,
+            against: score.team2_score
+          };
+          matrix[match.team2Idx][match.team1Idx] = {
+            for: score.team2_score,
+            against: score.team1_score
+          };
+        }
+      });
+
+      const shortNames = teamIndices.map(idx => {
+        const fullName = getTeamName(idx, config);
+        return fullName.substring(0, 3).toUpperCase();
+      });
+      
+      container.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs border-collapse">
+            <thead>
+              <tr style="color: ${textColor}; font-size: ${baseSize * 0.75}px;">
+                <th class="border p-1 bg-gray-100"></th>
+                ${shortNames.map(name => `<th class="border p-1 bg-gray-100 text-center">${name}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${teamIndices.map((teamIdx1, idx1) => `
+                <tr style="color: ${textColor}; font-size: ${baseSize * 0.75}px;">
+                  <td class="border p-1 bg-gray-100 font-semibold">${shortNames[idx1]}</td>
+                  ${teamIndices.map((teamIdx2, idx2) => {
+                    if (idx1 === idx2) {
+                      return `<td class="border p-1 bg-gray-200 text-center">-</td>`;
+                    }
+                    const result = matrix[teamIdx1][teamIdx2];
+                    if (result) {
+                      const won = result.for > result.against;
+                      const drawn = result.for === result.against;
+                      const bgColor = won ? '#d4edda' : drawn ? '#fff3cd' : '#f8d7da';
+                      return `<td class="border p-1 text-center font-semibold" style="background-color: ${bgColor};">${result.for}-${result.against}</td>`;
+                    }
+                    return `<td class="border p-1 text-center text-gray-400">-</td>`;
+                  }).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="mt-2 text-xs" style="color: ${textColor}; font-size: ${baseSize * 0.7}px;">
+            <span class="inline-block px-2 py-0.5 mr-2" style="background-color: #d4edda;">Menang</span>
+            <span class="inline-block px-2 py-0.5 mr-2" style="background-color: #fff3cd;">Seri</span>
+            <span class="inline-block px-2 py-0.5" style="background-color: #f8d7da;">Kalah</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSchedule(containerId, matches) {
+      const container = document.getElementById(containerId);
+      const config = window.elementSdk?.config || defaultConfig;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const textColor = config.text_color || defaultConfig.text_color;
+      
+      container.innerHTML = matches.map((match, index) => {
+        const timeStr = match.time;
+        const team1Name = getTeamName(match.team1Idx, config);
+        const team2Name = getTeamName(match.team2Idx, config);
+        
+        // Calculate end time (7 minutes later)
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const totalMinutes = hours * 60 + minutes + 7;
+        const endHours = Math.floor(totalMinutes / 60);
+        const endMinutes = totalMinutes % 60;
+        const endTimeStr = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+        
+        return `
+          <div class="border-2 rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="bg-purple-600 text-white px-3 py-2 rounded-lg font-bold" style="font-size: ${baseSize * 0.9}px;">
+                  ${timeStr}
+                </div>
+                <div class="text-xs text-gray-500" style="font-size: ${baseSize * 0.7}px;">
+                  ${endTimeStr}
+                </div>
+              </div>
+              <div class="flex-1 flex items-center justify-center gap-3">
+                <div class="text-right font-semibold flex-1" style="color: ${textColor}; font-size: ${baseSize * 0.95}px;">${team1Name}</div>
+                <div class="bg-white px-4 py-2 rounded-lg border-2 border-purple-300 font-bold" style="color: ${textColor}; font-size: ${baseSize}px;">VS</div>
+                <div class="text-left font-semibold flex-1" style="color: ${textColor}; font-size: ${baseSize * 0.95}px;">${team2Name}</div>
+              </div>
+              <div class="text-xs font-semibold bg-purple-100 px-3 py-1 rounded" style="color: ${textColor};">
+                Perlawanan ${index + 1}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderKnockoutSchedule() {
+      const config = window.elementSdk?.config || defaultConfig;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const textColor = config.text_color || defaultConfig.text_color;
+      
+      // Different knockout timings for Rendah vs Menengah
+      // RENDAH: 8 pasukan (3 Johan + 3 Naib Johan + 2 Tempat 3 Terbaik)
+      const knockoutMatches = currentCategory === 'rendah' ? [
+        { time: '11:16', endTime: '11:23', title: 'Suku Akhir 1', team1: 'Johan A', team2: 'Tempat 3 Terbaik #2', stage: 'quarter' },
+        { time: '11:23', endTime: '11:30', title: 'Suku Akhir 2', team1: 'Johan B', team2: 'Tempat 3 Terbaik #1', stage: 'quarter' },
+        { time: '11:30', endTime: '11:37', title: 'Suku Akhir 3', team1: 'Johan C', team2: 'Naib Johan B', stage: 'quarter' },
+        { time: '11:37', endTime: '11:44', title: 'Suku Akhir 4', team1: 'Naib Johan A', team2: 'Naib Johan C', stage: 'quarter' },
+        { time: '11:44', endTime: '11:51', title: 'Separuh Akhir 1', team1: 'Menang Suku Akhir 1', team2: 'Menang Suku Akhir 2', stage: 'semi' },
+        { time: '11:51', endTime: '11:58', title: 'Separuh Akhir 2', team1: 'Menang Suku Akhir 3', team2: 'Menang Suku Akhir 4', stage: 'semi' },
+        { time: '11:58', endTime: '12:05', title: 'Akhir', team1: 'Menang Separuh Akhir 1', team2: 'Menang Separuh Akhir 2', stage: 'final' }
+      ] : [
+        { time: '15:30', endTime: '15:37', title: 'Separuh Akhir 1', team1: 'Johan A', team2: 'Naib Johan B', stage: 'semi' },
+        { time: '15:37', endTime: '15:44', title: 'Separuh Akhir 2', team1: 'Johan B', team2: 'Naib Johan A', stage: 'semi' },
+        { time: '15:44', endTime: '15:51', title: 'Akhir', team1: 'Menang Separuh Akhir 1', team2: 'Menang Separuh Akhir 2', stage: 'final' }
+      ];
+      
+      const quarterMatches = knockoutMatches.filter(m => m.stage === 'quarter');
+      const semiMatches = knockoutMatches.filter(m => m.stage === 'semi');
+      const finalMatches = knockoutMatches.filter(m => m.stage === 'final');
+      
+      function renderMatchGroup(matches, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = matches.map(match => `
+          <div class="border-2 rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="bg-purple-600 text-white px-3 py-2 rounded-lg font-bold" style="font-size: ${baseSize * 0.9}px;">
+                  ${match.time}
+                </div>
+                <div class="text-xs text-gray-500" style="font-size: ${baseSize * 0.7}px;">
+                  ${match.endTime}
+                </div>
+              </div>
+              <div class="flex-1 flex items-center justify-center gap-3">
+                <div class="text-right font-semibold flex-1" style="color: ${textColor}; font-size: ${baseSize * 0.95}px;">${match.team1}</div>
+                <div class="bg-white px-4 py-2 rounded-lg border-2 border-purple-300 font-bold" style="color: ${textColor}; font-size: ${baseSize}px;">VS</div>
+                <div class="text-left font-semibold flex-1" style="color: ${textColor}; font-size: ${baseSize * 0.95}px;">${match.team2}</div>
+              </div>
+              <div class="text-xs font-semibold bg-purple-100 px-3 py-1 rounded" style="color: ${textColor};">
+                ${match.title}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      if (quarterMatches.length > 0) {
+        renderMatchGroup(quarterMatches, 'schedule-knockout-quarter');
+      }
+      renderMatchGroup(semiMatches, 'schedule-knockout-semi');
+      renderMatchGroup(finalMatches, 'schedule-knockout-final');
+    }
+
+    function renderMatches(containerId, matches) {
+      const container = document.getElementById(containerId);
+      const config = window.elementSdk?.config || defaultConfig;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const buttonColor = config.button_color || defaultConfig.button_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      
+      container.innerHTML = matches.map((match, index) => {
+        const score = matchScores.get(getMatchId(match.id));
+        const team1Score = score?.team1_score ?? '';
+        const team2Score = score?.team2_score ?? '';
+        const hasScore = team1Score !== '' && team2Score !== '';
+        const team1Name = getTeamName(match.team1Idx, config);
+        const team2Name = getTeamName(match.team2Idx, config);
+        
+        if (isAdminMode) {
+          return `
+            <div class="border rounded-lg p-3 bg-gray-50">
+              <div class="flex items-center justify-between gap-2">
+                <div class="text-xs font-semibold" style="color: ${textColor}; min-width: 30px;">#${index + 1}</div>
+                <div class="flex-1 text-right" style="color: ${textColor}; font-size: ${baseSize * 0.9}px;">${team1Name}</div>
+                <div class="flex items-center gap-2">
+                  <input type="number" 
+                    id="score-${match.id}-1" 
+                    value="${team1Score}" 
+                    placeholder="0"
+                    min="0"
+                    class="w-12 text-center border rounded px-2 py-1"
+                    style="font-size: ${baseSize}px;">
+                  <span style="color: ${textColor}; font-size: ${baseSize}px;">-</span>
+                  <input type="number" 
+                    id="score-${match.id}-2" 
+                    value="${team2Score}" 
+                    placeholder="0"
+                    min="0"
+                    class="w-12 text-center border rounded px-2 py-1"
+                    style="font-size: ${baseSize}px;">
+                </div>
+                <div class="flex-1" style="color: ${textColor}; font-size: ${baseSize * 0.9}px;">${team2Name}</div>
+                <button 
+                  onclick="saveScore('${match.id}')" 
+                  id="btn-${match.id}"
+                  class="px-3 py-1 text-white rounded hover:opacity-90 transition-opacity"
+                  style="background-color: ${buttonColor}; font-size: ${baseSize * 0.85}px; min-width: 70px;">
+                  ${hasScore ? 'Kemaskini' : 'Simpan'}
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          const displayScore1 = team1Score === '' ? '-' : team1Score;
+          const displayScore2 = team2Score === '' ? '-' : team2Score;
+          return `
+            <div class="border rounded-lg p-3 bg-gray-50">
+              <div class="flex items-center justify-between gap-2">
+                <div class="text-xs font-semibold" style="color: ${textColor}; min-width: 30px;">#${index + 1}</div>
+                <div class="flex-1 text-right font-semibold" style="color: ${textColor}; font-size: ${baseSize * 0.9}px;">${team1Name}</div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-white rounded border-2" style="min-width: 80px;">
+                  <span class="font-bold text-center flex-1" style="color: ${textColor}; font-size: ${baseSize * 1.2}px;">${displayScore1}</span>
+                  <span style="color: ${textColor}; font-size: ${baseSize}px;">-</span>
+                  <span class="font-bold text-center flex-1" style="color: ${textColor}; font-size: ${baseSize * 1.2}px;">${displayScore2}</span>
+                </div>
+                <div class="flex-1 font-semibold" style="color: ${textColor}; font-size: ${baseSize * 0.9}px;">${team2Name}</div>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    function renderKnockoutMatch(containerId, matchId, defaultTeam1, defaultTeam2, timeDisplay) {
+      const container = document.getElementById(containerId);
+      const config = window.elementSdk?.config || defaultConfig;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const buttonColor = config.button_color || defaultConfig.button_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      
+      const score = matchScores.get(getMatchId(matchId));
+      const team1Name = score?.team1_name || defaultTeam1;
+      const team2Name = score?.team2_name || defaultTeam2;
+      const team1Score = score?.team1_score ?? '';
+      const team2Score = score?.team2_score ?? '';
+      const hasScore = team1Score !== '' && team2Score !== '';
+      
+      if (isAdminMode) {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex gap-2">
+              <input type="text" 
+                id="team-${matchId}-1" 
+                value="${team1Name}" 
+                placeholder="Nama Pasukan 1"
+                class="flex-1 border rounded px-3 py-2"
+                style="font-size: ${baseSize * 0.9}px;">
+            </div>
+            <div class="flex gap-2">
+              <input type="text" 
+                id="team-${matchId}-2" 
+                value="${team2Name}" 
+                placeholder="Nama Pasukan 2"
+                class="flex-1 border rounded px-3 py-2"
+                style="font-size: ${baseSize * 0.9}px;">
+            </div>
+            <div class="flex items-center justify-center gap-3">
+              <input type="number" 
+                id="score-${matchId}-1" 
+                value="${team1Score}" 
+                placeholder="0"
+                min="0"
+                class="w-16 text-center border rounded px-2 py-2 text-lg font-bold"
+                style="font-size: ${baseSize * 1.1}px;">
+              <span style="color: ${textColor}; font-size: ${baseSize * 1.2}px;" class="font-bold">VS</span>
+              <input type="number" 
+                id="score-${matchId}-2" 
+                value="${team2Score}" 
+                placeholder="0"
+                min="0"
+                class="w-16 text-center border rounded px-2 py-2 text-lg font-bold"
+                style="font-size: ${baseSize * 1.1}px;">
+            </div>
+            <button 
+              onclick="saveKnockoutScore('${matchId}')" 
+              id="btn-${matchId}"
+              class="w-full px-4 py-2 text-white rounded hover:opacity-90 transition-opacity font-semibold"
+              style="background-color: ${buttonColor}; font-size: ${baseSize * 0.9}px;">
+              ${hasScore ? 'Kemaskini Keputusan' : 'Simpan Keputusan'}
+            </button>
+          </div>
+        `;
+      } else {
+        const displayScore1 = team1Score === '' ? '-' : team1Score;
+        const displayScore2 = team2Score === '' ? '-' : team2Score;
+        const winner = hasScore && team1Score !== team2Score 
+          ? (team1Score > team2Score ? team1Name : team2Name) 
+          : null;
+        
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="text-center font-semibold" style="color: ${textColor}; font-size: ${baseSize}px;">${team1Name}</div>
+            <div class="flex items-center justify-center gap-3 py-3 bg-white rounded-lg border-2">
+              <span class="font-bold text-2xl" style="color: ${textColor}; font-size: ${baseSize * 1.5}px;">${displayScore1}</span>
+              <span style="color: ${textColor}; font-size: ${baseSize}px;" class="font-bold">VS</span>
+              <span class="font-bold text-2xl" style="color: ${textColor}; font-size: ${baseSize * 1.5}px;">${displayScore2}</span>
+            </div>
+            <div class="text-center font-semibold" style="color: ${textColor}; font-size: ${baseSize}px;">${team2Name}</div>
+            ${winner ? `<div class="text-center mt-2 px-3 py-2 bg-green-100 rounded-lg"><span style="color: #059669; font-size: ${baseSize * 0.9}px;" class="font-bold">🏆 Pemenang: ${winner}</span></div>` : ''}
+          </div>
+        `;
+      }
+    }
+
+    async function saveScore(matchId) {
+      const score1Input = document.getElementById(`score-${matchId}-1`);
+      const score2Input = document.getElementById(`score-${matchId}-2`);
+      const saveBtn = document.getElementById(`btn-${matchId}`);
+      
+      const score1 = score1Input.value === '' ? null : parseInt(score1Input.value);
+      const score2 = score2Input.value === '' ? null : parseInt(score2Input.value);
+
+      if (score1 === null || score2 === null) {
+        return;
+      }
+
+      score1Input.disabled = true;
+      score2Input.disabled = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+
+      const existingScore = matchScores.get(getMatchId(matchId));
+      
+      if (existingScore && existingScore.__backendId) {
+        const result = await window.dataSdk.update({
+          ...existingScore,
+          team1_score: score1,
+          team2_score: score2
+        });
+        
+        if (!result.isOk) {
+          score1Input.disabled = false;
+          score2Input.disabled = false;
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Kemaskini';
+        }
+      } else {
+        const result = await window.dataSdk.create({
+          match_id: getMatchId(matchId),
+          category: currentCategory,
+          team1_score: score1,
+          team2_score: score2
+        });
+        
+        if (!result.isOk) {
+          score1Input.disabled = false;
+          score2Input.disabled = false;
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Simpan';
+        }
+      }
+    }
+
+    async function saveKnockoutScore(matchId) {
+      const team1Input = document.getElementById(`team-${matchId}-1`);
+      const team2Input = document.getElementById(`team-${matchId}-2`);
+      const score1Input = document.getElementById(`score-${matchId}-1`);
+      const score2Input = document.getElementById(`score-${matchId}-2`);
+      const saveBtn = document.getElementById(`btn-${matchId}`);
+      
+      const team1Name = team1Input.value.trim();
+      const team2Name = team2Input.value.trim();
+      const score1 = score1Input.value === '' ? null : parseInt(score1Input.value);
+      const score2 = score2Input.value === '' ? null : parseInt(score2Input.value);
+
+      if (!team1Name || !team2Name) {
+        return;
+      }
+
+      team1Input.disabled = true;
+      team2Input.disabled = true;
+      score1Input.disabled = true;
+      score2Input.disabled = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+
+      const existingScore = matchScores.get(getMatchId(matchId));
+      
+      if (existingScore && existingScore.__backendId) {
+        const result = await window.dataSdk.update({
+          ...existingScore,
+          team1_name: team1Name,
+          team2_name: team2Name,
+          team1_score: score1,
+          team2_score: score2
+        });
+        
+        if (!result.isOk) {
+          team1Input.disabled = false;
+          team2Input.disabled = false;
+          score1Input.disabled = false;
+          score2Input.disabled = false;
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Kemaskini Keputusan';
+        }
+      } else {
+        const result = await window.dataSdk.create({
+          match_id: getMatchId(matchId),
+          category: currentCategory,
+          team1_name: team1Name,
+          team2_name: team2Name,
+          team1_score: score1,
+          team2_score: score2
+        });
+        
+        if (!result.isOk) {
+          team1Input.disabled = false;
+          team2Input.disabled = false;
+          score1Input.disabled = false;
+          score2Input.disabled = false;
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Simpan Keputusan';
+        }
+      }
+    }
+
+    function renderKnockoutStage() {
+      // Show/hide quarter finals section based on category
+      const quarterSection = document.getElementById('quarter-finals-section');
+      if (currentCategory === 'rendah') {
+        quarterSection.style.display = 'block';
+        
+        // Render quarter finals
+        renderKnockoutMatch('quarter1-match', 'QUARTER-1', 'Johan A', 'Tempat 3 Terbaik #2', '11:16-11:23');
+        renderKnockoutMatch('quarter2-match', 'QUARTER-2', 'Johan B', 'Tempat 3 Terbaik #1', '11:23-11:30');
+        renderKnockoutMatch('quarter3-match', 'QUARTER-3', 'Johan C', 'Naib Johan B', '11:30-11:37');
+        renderKnockoutMatch('quarter4-match', 'QUARTER-4', 'Naib Johan A', 'Naib Johan C', '11:37-11:44');
+        
+        // Render semi finals for Rendah
+        document.getElementById('semi1-time').textContent = `⏰ 11:44-11:51`;
+        document.getElementById('semi2-time').textContent = `⏰ 11:51-11:58`;
+        document.getElementById('final-time').textContent = `⏰ 11:58-12:05`;
+        
+        renderKnockoutMatch('semi1-match', 'SEMI-1', 'Menang Suku Akhir 1', 'Menang Suku Akhir 2', '11:44-11:51');
+        renderKnockoutMatch('semi2-match', 'SEMI-2', 'Menang Suku Akhir 3', 'Menang Suku Akhir 4', '11:51-11:58');
+        renderKnockoutMatch('final-match', 'FINAL', 'Pemenang Separuh Akhir 1', 'Pemenang Separuh Akhir 2', '11:58-12:05');
+      } else {
+        quarterSection.style.display = 'none';
+        
+        // Render semi finals for Menengah
+        document.getElementById('semi1-time').textContent = `⏰ 15:30-15:37`;
+        document.getElementById('semi2-time').textContent = `⏰ 15:37-15:44`;
+        document.getElementById('final-time').textContent = `⏰ 15:44-15:51`;
+        
+        renderKnockoutMatch('semi1-match', 'SEMI-1', 'Johan A', 'Naib Johan B', '15:30-15:37');
+        renderKnockoutMatch('semi2-match', 'SEMI-2', 'Johan B', 'Naib Johan A', '15:37-15:44');
+        renderKnockoutMatch('final-match', 'FINAL', 'Pemenang Separuh Akhir 1', 'Pemenang Separuh Akhir 2', '15:44-15:51');
+      }
+    }
+
+    function getCurrentMatches() {
+      if (currentCategory === 'rendah') {
+        return {
+          matchesA: matchesRendahA,
+          matchesB: matchesRendahB,
+          matchesC: matchesRendahC
+        };
+      } else {
+        return {
+          matchesA: matchesMenengahA,
+          matchesB: matchesMenengahB,
+          matchesC: [] // No Group C for Menengah
+        };
+      }
+    }
+
+    function renderAll() {
+      const { matchesA, matchesB, matchesC } = getCurrentMatches();
+      
+      // For Menengah: A has 5 teams (0-4), B has 5 teams (5-9)
+      // For Rendah: A has 4 teams (0-3), B has 4 teams (4-7), C has 4 teams (8-11)
+      const teamIndicesA = currentCategory === 'menengah' ? [0, 1, 2, 3, 4] : [0, 1, 2, 3];
+      const teamIndicesB = currentCategory === 'menengah' ? [5, 6, 7, 8, 9] : [4, 5, 6, 7];
+      const teamIndicesC = [8, 9, 10, 11];
+      
+      // Show/Hide Group C based on category
+      const groupCStandings = document.getElementById('page-standings').children[2];
+      const groupCH2H = document.getElementById('page-h2h').children[2];
+      const groupCSchedule = document.getElementById('page-schedule').children[2];
+      
+      if (currentCategory === 'menengah') {
+        groupCStandings.style.display = 'none';
+        groupCH2H.style.display = 'none';
+        groupCSchedule.style.display = 'none';
+      } else {
+        groupCStandings.style.display = 'block';
+        groupCH2H.style.display = 'block';
+        groupCSchedule.style.display = 'block';
+      }
+      
+      renderStandings('standings-a', teamIndicesA, matchesA);
+      renderStandings('standings-b', teamIndicesB, matchesB);
+      if (currentCategory === 'rendah') {
+        renderStandings('standings-c', teamIndicesC, matchesC);
+      }
+      
+      renderHeadToHead('h2h-a', teamIndicesA, matchesA);
+      renderHeadToHead('h2h-b', teamIndicesB, matchesB);
+      if (currentCategory === 'rendah') {
+        renderHeadToHead('h2h-c', teamIndicesC, matchesC);
+      }
+      
+      renderMatches('matches-a', matchesA);
+      renderMatches('matches-b', matchesB);
+      if (currentCategory === 'rendah') {
+        renderMatches('matches-c', matchesC);
+      }
+      
+      renderSchedule('schedule-a', matchesA);
+      renderSchedule('schedule-b', matchesB);
+      if (currentCategory === 'rendah') {
+        renderSchedule('schedule-c', matchesC);
+      }
+      
+      renderKnockoutSchedule();
+      renderKnockoutStage();
+    }
+
+    const dataHandler = {
+      onDataChanged(data) {
+        matchScores = new Map(data.map(record => [record.match_id, record]));
+        renderAll();
+      }
+    };
+
+    async function onConfigChange(config) {
+      const titleElement = document.getElementById('tournament-title');
+      const groupAElement = document.getElementById('group-a-title');
+      const groupBElement = document.getElementById('group-b-title');
+      const groupCElement = document.getElementById('group-c-title');
+      const appElement = document.getElementById('app');
+      
+      const title = config.tournament_title || defaultConfig.tournament_title;
+      const groupAName = config.group_a_name || defaultConfig.group_a_name;
+      const groupBName = config.group_b_name || defaultConfig.group_b_name;
+      const groupCName = config.group_c_name || defaultConfig.group_c_name;
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      const secondaryColor = config.secondary_color || defaultConfig.secondary_color;
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      titleElement.textContent = title;
+      groupAElement.textContent = groupAName;
+      groupBElement.textContent = groupBName;
+      groupCElement.textContent = groupCName;
+      appElement.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`;
+      
+      titleElement.style.fontFamily = `${customFont}, system-ui, sans-serif`;
+      titleElement.style.fontSize = `${baseSize * 2}px`;
+      
+      renderAll();
+    }
+
+    function toggleMode() {
+      if (!isAdminMode && !isAuthenticated) {
+        showPasswordModal();
+        return;
+      }
+      
+      if (isAdminMode && isAuthenticated) {
+        isAdminMode = false;
+        isAuthenticated = false;
+        updateModeUI();
+        renderAll();
+        return;
+      }
+    }
+
+    function showPasswordModal() {
+      const modal = document.getElementById('password-modal');
+      const passwordInput = document.getElementById('password-input');
+      const errorMessage = document.getElementById('error-message');
+      
+      modal.classList.remove('hidden');
+      errorMessage.classList.add('hidden');
+      passwordInput.value = '';
+      setTimeout(() => passwordInput.focus(), 100);
+    }
+
+    function closePasswordModal() {
+      const modal = document.getElementById('password-modal');
+      modal.classList.add('hidden');
+    }
+
+    function checkPassword() {
+      const passwordInput = document.getElementById('password-input');
+      const errorMessage = document.getElementById('error-message');
+      const password = passwordInput.value;
+      
+      if (password === ADMIN_PASSWORD) {
+        isAuthenticated = true;
+        isAdminMode = true;
+        closePasswordModal();
+        updateModeUI();
+        renderAll();
+      } else {
+        errorMessage.classList.remove('hidden');
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    }
+
+    function updateModeUI() {
+      const toggleBtn = document.getElementById('mode-toggle');
+      const indicator = document.getElementById('mode-indicator');
+      
+      if (isAdminMode && isAuthenticated) {
+        toggleBtn.innerHTML = '🚪 Keluar Admin';
+        indicator.innerHTML = '👤 Mod Admin';
+        indicator.className = 'px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-lg';
+      } else {
+        toggleBtn.innerHTML = '👤 Mod Admin';
+        indicator.innerHTML = '�� Mod Paparan';
+        indicator.className = 'px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-lg';
+      }
+    }
+
+    window.saveScore = saveScore;
+    window.saveKnockoutScore = saveKnockoutScore;
+    window.toggleMode = toggleMode;
+    window.checkPassword = checkPassword;
+    window.closePasswordModal = closePasswordModal;
+    window.showPage = showPage;
+    window.switchCategory = switchCategory;
+
+    (async () => {
+      if (window.dataSdk) {
+        const initResult = await window.dataSdk.init(dataHandler);
+        if (!initResult.isOk) {
+          console.error("Failed to initialize data SDK");
+        }
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.primary_color || defaultConfig.primary_color,
+                set: (value) => {
+                  config.primary_color = value;
+                  window.elementSdk.setConfig({ primary_color: value });
+                }
+              },
+              {
+                get: () => config.secondary_color || defaultConfig.secondary_color,
+                set: (value) => {
+                  config.secondary_color = value;
+                  window.elementSdk.setConfig({ secondary_color: value });
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  config.surface_color = value;
+                  window.elementSdk.setConfig({ surface_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  config.text_color = value;
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.button_color || defaultConfig.button_color,
+                set: (value) => {
+                  config.button_color = value;
+                  window.elementSdk.setConfig({ button_color: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                config.font_family = value;
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                config.font_size = value;
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["tournament_title", config.tournament_title || defaultConfig.tournament_title],
+            ["group_a_name", config.group_a_name || defaultConfig.group_a_name],
+            ["group_b_name", config.group_b_name || defaultConfig.group_b_name],
+            ["group_c_name", config.group_c_name || defaultConfig.group_c_name],
+            ["team_1", config.team_1 || defaultConfig.team_1],
+            ["team_2", config.team_2 || defaultConfig.team_2],
+            ["team_3", config.team_3 || defaultConfig.team_3],
+            ["team_4", config.team_4 || defaultConfig.team_4],
+            ["team_5", config.team_5 || defaultConfig.team_5],
+            ["team_6", config.team_6 || defaultConfig.team_6],
+            ["team_7", config.team_7 || defaultConfig.team_7],
+            ["team_8", config.team_8 || defaultConfig.team_8],
+            ["team_9", config.team_9 || defaultConfig.team_9],
+            ["team_10", config.team_10 || defaultConfig.team_10],
+            ["team_11", config.team_11 || defaultConfig.team_11],
+            ["team_12", config.team_12 || defaultConfig.team_12]
+          ])
+        });
+
+        await onConfigChange(window.elementSdk.config);
+      } else {
+        renderAll();
+      }
+    })();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9aee0af426306312',t:'MTc2NTg4NjY2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
